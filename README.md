@@ -1,4 +1,5 @@
 Projeto de Sistema de Ponto Eletrônico
+
 Este é um projeto simples de um sistema de ponto eletrônico desenvolvido em Python, utilizando a biblioteca Tkinter para interface gráfica e SQLite como banco de dados.
 
 Funcionalidades
