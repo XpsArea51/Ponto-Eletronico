@@ -10,12 +10,14 @@ Este arquivo contém as funções que interagem diretamente com o banco de dados
 create_tables.sql
 Este é o script SQL que é usado para criar as tabelas no banco de dados SQLite.
 Como Usar
+
 1.	Clone ou baixe este repositório.
 2.	Execute o arquivo main.py.
 3.	Insira o ID do tutor e CPF no respectivo campo.
 4.	Escolha o tipo de ponto que deseja registrar.
 5.	Clique no botão "Registrar Ponto" para registrar o ponto.
 6.	Clique no botão "Listar Pontos" para visualizar os pontos registrados.
+
 Contribuindo
 Contribuições são bem-vindas! Por favor, sinta-se à vontade para corrigir bugs, melhorar as coisas, fornecer documentação. Apenas faça um fork e crie um pull request.
 Licença
