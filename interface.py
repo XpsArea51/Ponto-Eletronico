@@ -14,12 +14,10 @@ def update_clock():
     now = datetime.now(pytz.timezone('America/Sao_Paulo')).strftime("%H:%M:%S")
     # Atualiza o texto do label do relógio
     data_hora_label.config(text=now)
-    # Chama a função novamente após 1000 milissegundos
     root.after(1000, update_clock)
 
 # Função para registrar o ponto
 def registrar_ponto():
-    # Pega as entradas do usuário
     funcionario_id = id_entry.get()
     cpf = cpf_entry.get()
     tipo = tipo_var.get()
@@ -28,13 +26,11 @@ def registrar_ponto():
 
     # Verifica se todas as entradas necessárias foram preenchidas
     if not funcionario_id or not cpf or not tipo:
-        # Se não, mostra uma mensagem de aviso
         messagebox.showwarning("Campos faltando", "Por favor, preencha todos os campos.")
         return
 
     # Registra o ponto no banco de dados
     funcoes.registrar_ponto(funcionario_id, cpf, tipo, data_hora)
-    # Mostra uma mensagem de sucesso
     messagebox.showinfo("Sucesso", "Ponto registrado")
 
 # Função para listar os pontos registrados
@@ -49,7 +45,7 @@ def listar_pontos():
     for i in pontos:
         listbox.insert(tk.END, i)
 
-# Função para alterar a opção de tipo de ponto
+# Função para alterar a opção de tipo de ponto (Esta função não está bem implementada, pois não consegui encontrar uma solução para fazê-la funcionar corretamente)
 def change_option(*args):
     # Dicionário para ciclar as opções
     options_cycle = {"1º Entrada": "1º Saída", "1º Saída": "2º Entrada", "2º Entrada": "2º Saída", "2º Saída": "1º Entrada"}
