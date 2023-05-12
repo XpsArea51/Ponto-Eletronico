@@ -38,3 +38,7 @@ def validar_cpf(cpf):
         return False
 
     return True
+
+def is_valid_cpf(cpf):
+   
+    return len(cpf) == 11 and cpf.isdigit()
