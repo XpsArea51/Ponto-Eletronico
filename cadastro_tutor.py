@@ -10,7 +10,7 @@ def iniciar_interface_cadastro():
     def registrar_tutor():
         nome = nome_entry.get()
         cpf = cpf_entry.get()
-        equipe = equipe_var.get()  # Alterado para pegar valor da OptionMenu
+        equipe = equipe_var.get() 
 
         # Verifica se todos os campos foram preenchidos
         if not nome or not cpf or not equipe:
