@@ -4,113 +4,110 @@ from datetime import datetime
 import pytz
 import funcoes
 import db
+import cadastro_tutor
 
-# Criação da tabela de registros de ponto no banco de dados
-db.criar_tabela_registros_ponto()
 
-# Função para atualizar o relógio na interface
-def update_clock():
-    # Pega o horário atual e formata como uma string
-    now = datetime.now(pytz.timezone('America/Sao_Paulo')).strftime("%H:%M:%S")
-    # Atualiza o texto do label do relógio
-    data_hora_label.config(text=now)
-    root.after(1000, update_clock)
 
-# Função para registrar o ponto
-def registrar_ponto():
-    funcionario_id = id_entry.get()
-    cpf = cpf_entry.get()
-    tipo = tipo_var.get()
-    # Pega a data e hora atual
-    data_hora = datetime.now(pytz.timezone('America/Sao_Paulo')).strftime("%Y-%m-%d %H:%M:%S")
+def iniciar_interface_ponto():
+    global root
+    root = tk.Tk()
+    root.title("Ponto Eletrônico - Tutores")
+    root.geometry("350x400")
 
-    # Verifica se todas as entradas necessárias foram preenchidas
-    if not funcionario_id or not cpf or not tipo:
-        messagebox.showwarning("Campos faltando", "Por favor, preencha todos os campos.")
-        return
+    # Criação da tabela de tutores e registros de ponto no banco de dados
+    db.criar_tabela_tutores()
+    db.criar_tabela_registros_ponto()
 
-    # Registra o ponto no banco de dados
-    funcoes.registrar_ponto(funcionario_id, cpf, tipo, data_hora)
-    messagebox.showinfo("Sucesso", "Ponto registrado")
+    def update_clock():
+        now = datetime.now(pytz.timezone('America/Sao_Paulo')).strftime("%H:%M:%S")
+        data_hora_label.config(text=now)
+        root.after(1000, update_clock)
 
-# Função para listar os pontos registrados
-def listar_pontos():
-    # Pega o ID do funcionário
-    funcionario_id = id_entry.get()
-    # Pega a lista de pontos do banco de dados
-    pontos = funcoes.listar_pontos(funcionario_id)
-    # Limpa a Listbox
-    listbox.delete(0, tk.END)
-    # Adiciona cada ponto na Listbox
-    for i in pontos:
-        listbox.insert(tk.END, i)
+    def registrar_ponto():
+        cpf = cpf_entry.get()
+        tipo = tipo_var.get()
+        data_hora = datetime.now(pytz.timezone('America/Sao_Paulo')).strftime("%Y-%m-%d %H:%M:%S")
 
-# Função para alterar a opção de tipo de ponto (Esta função não está bem implementada, pois não consegui encontrar uma solução para fazê-la funcionar corretamente)
-def change_option(*args):
-    # Dicionário para ciclar as opções
-    options_cycle = {"1º Entrada": "1º Saída", "1º Saída": "2º Entrada", "2º Entrada": "2º Saída", "2º Saída": "1º Entrada"}
-    # Altera a opção atual para a próxima do ciclo
-    tipo_var.set(options_cycle[tipo_var.get()])
+        if not cpf or not tipo:
+            messagebox.showwarning("Campos faltando", "Por favor, preencha todos os campos.")
+            return
 
-# Criação da janela principal
-root = tk.Tk()
-root.title("Ponto Eletrônico - Tutores")
-root.geometry("400x400")
+        # Verifica se o CPF está cadastrado no banco de dados
+        if not db.buscar_tutor_por_cpf(cpf):
+            messagebox.showwarning("CPF não cadastrado", "Este CPF não está cadastrado.")
+            return
 
-# Criação dos widgets da interface e adição deles na grid
-id_label = tk.Label(root, text="Nome do Tutor")
-id_label.grid(row=0, column=0, padx=10, pady=10)
-id_entry = tk.Entry(root, justify='center')
-id_entry.grid(row=0, column=1, padx=10)
+        funcoes.registrar_ponto(cpf, tipo, data_hora)
+        messagebox.showinfo("Sucesso", "Ponto registrado")
 
-cpf_label = tk.Label(root, text="CPF do Tutor")
-cpf_label.grid(row=1, column=0, padx=10, pady=10)
-cpf_entry = tk.Entry(root, justify='center')
-cpf_entry.grid
-cpf_entry.grid(row=1, column=1, padx=10)
+    def listar_pontos():
+        cpf = cpf_entry.get()
+        pontos = funcoes.listar_pontos(cpf)
+        listbox.delete(0, tk.END)
+        if pontos:
+            for ponto in pontos:
+                horas_trabalhadas = ponto['horas_trabalhadas'].total_seconds() / 3600  # Converter segundos em horas
+                horas_trabalhadas_formatadas = "{:02.0f}:{:02.0f}".format(*divmod(horas_trabalhadas * 60, 60))
+                color = 'green' if horas_trabalhadas >= 8 else 'red'
+                listbox.insert(tk.END, f"Nome: {ponto['nome']}, CPF: {ponto['cpf']}, Data e Hora: {ponto['data_hora']}, Tipo: {ponto['tipo']}, Horas Trabalhadas: {horas_trabalhadas_formatadas}")
+                listbox.itemconfig(tk.END, {'bg': color})
 
-# Configuração do rótulo para exibir a data e hora atual
-data_hora_label = tk.Label(root, text="", font=("Helvetica", 48))
-data_hora_label.grid(row=2, column=0, columnspan=2, padx=10, pady=10)
-# Chama a função para atualizar o relógio
-update_clock()
+        else:
+            messagebox.showinfo("Sem pontos", "Não há pontos registrados para esse CPF.")
 
-# Configuração do campo de opções para o tipo de ponto
-tipo_label = tk.Label(root, text="Tipo de Ponto")
-tipo_label.grid(row=3, column=0, padx=10, pady=10)
-tipo_var = tk.StringVar(root)
-tipo_var.set("1º Entrada")  # valor inicial
-tipo_options = ["1º Entrada", "1º Saída", "2º Entrada", "2º Saída"]
-tipo_entry = tk.OptionMenu(root, tipo_var, *tipo_options)
-tipo_entry.grid(row=3, column=1, padx=10)
 
-# Configuração do botão para registrar ponto
-registrar_button = tk.Button(root, text="Registrar Ponto", command=registrar_ponto)
-registrar_button.config(width=15, bg='green')
-registrar_button.grid(row=4, column=0, padx=10, pady=10)
+    def abrir_janela_cadastro():
+        encerrar_interface_ponto()
+        cadastro_tutor.iniciar_interface_cadastro()
 
-# Configuração do botão para listar os pontos
-listar_button = tk.Button(root, text="Listar Pontos", command=listar_pontos)
-listar_button.grid(row=4, column=1, padx=10, pady=10)
+    cpf_entry = tk.Entry(root, justify='center')
+    cpf_entry.insert(0, "CPF do Tutor")  # Adiciona o texto 'CPF do Tutor' no campo de entrada
+    cpf_entry.bind("<FocusIn>", lambda args: cpf_entry.delete('0', 'end') if cpf_entry.get() == "CPF do Tutor" else None)  # Limpa o campo somente se o texto for 'CPF do Tutor'
+    cpf_entry.grid(row=0, column=0, padx=10, pady=5, columnspan=2)  # Centraliza o campo de entrada do CPF
 
-# Configuração da listbox para listar os pontos
-listbox = tk.Listbox(root)
-listbox.grid(row=5, column=0, columnspan=2, padx=10, pady=10, sticky='nsew')
+    data_hora_label = tk.Label(root, text="", font=("Helvetica", 48))
+    data_hora_label.grid(row=1, column=0, columnspan=2, padx=10, pady=5)
+    update_clock()
 
-# Configuração das barras de rolagem para a listbox
-scrollbar_y = tk.Scrollbar(listbox)
-scrollbar_y.pack(side=tk.RIGHT, fill=tk.Y)
-scrollbar_x = tk.Scrollbar(listbox, orient=tk.HORIZONTAL)
-scrollbar_x.pack(side=tk.BOTTOM, fill=tk.X)
+    tipo_var = tk.StringVar(root)
+    tipo_var.set("1º Entrada")  # valor inicial
+    tipo_options = ["1º Entrada", "1º Saída", "2º Entrada", "2º Saída"]
 
-# Configuração das barras de rolagem para interagir com a listbox
-listbox.config(yscrollcommand=scrollbar_y.set, xscrollcommand=scrollbar_x.set)
-scrollbar_y.config(command=listbox.yview)
-scrollbar_x.config(command=listbox.xview)
+    tipo_entry = tk.OptionMenu(root, tipo_var, *tipo_options)
+    tipo_entry.grid(row=2, column=0, padx=10, pady=5, columnspan=2)
 
-# Configuração da janela principal para expandir a listbox e as barras de rolagem conforme o tamanho da janela
-root.grid_rowconfigure(5, weight=1)
-root.grid_columnconfigure(1, weight=1)
+    registrar_button = tk.Button(root, text="Registrar Ponto", command=registrar_ponto)
+    registrar_button.config(width=15, bg='green')
+    registrar_button.grid(row=3, column=0, padx=10, pady=5, columnspan=2)
 
-# Inicialização do loop principal da interface
-root.mainloop()
+    listar_button = tk.Button(root, text="Listar Pontos", command=listar_pontos)
+    listar_button.grid(row=4, column=1, padx=10, pady=5)
+
+    listbox = tk.Listbox(root, height=10)  # Increased the height of the listbox
+    listbox.grid(row=5, column=0, columnspan=2, padx=10, pady=5, sticky='nsew')
+
+    cadastro_button = tk.Button(root, text="Cadastre-se", command=abrir_janela_cadastro)
+    cadastro_button.grid(row=6, column=0, padx=10, pady=5, columnspan=2)  # Move the 'Register' button below the listbox
+
+    scrollbar_y = tk.Scrollbar(listbox)
+    scrollbar_y.pack(side=tk.RIGHT, fill=tk.Y)
+    scrollbar_x = tk.Scrollbar(listbox, orient=tk.HORIZONTAL)
+    scrollbar_x.pack(side=tk.BOTTOM, fill=tk.X)
+
+    listbox.config(yscrollcommand=scrollbar_y.set, xscrollcommand=scrollbar_x.set)
+    scrollbar_y.config(command=listbox.yview)
+    scrollbar_x.config(command=listbox.xview)
+
+    root.grid_rowconfigure(5, weight=1)
+    root.grid_columnconfigure(1, weight=1)
+
+    root.mainloop()
+
+def encerrar_interface_ponto():
+    global root
+    root.quit()  # encerra o loop principal
+    root.destroy()  # destrói a janela
+
+if __name__ == "__main__":
+    iniciar_interface_ponto()
+

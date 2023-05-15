@@ -13,3 +13,11 @@ CREATE TABLE IF NOT EXISTS registros_ponto (
   tipo TEXT NOT NULL,
   FOREIGN KEY (funcionario_id) REFERENCES funcionarios (id)
 );
+
+-- Cria a tabela 'tutores'
+CREATE TABLE IF NOT EXISTS tutores (
+  id INTEGER PRIMARY KEY,
+  nome TEXT NOT NULL,
+  cpf TEXT NOT NULL,
+  equipe TEXT NOT NULL
+);
