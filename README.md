@@ -1,8 +1,11 @@
 Ponto Eletrônico - Tutores
-Este projeto consiste em um sistema simples de registro de ponto para os tutores. Ele foi desenvolvido em Python utilizando a biblioteca Tkinter para a interface gráfica e SQLite para o banco de dados.
+
+Este projeto consiste em um sistema simples de registro de ponto para os tutores. Ele foi desenvolvido em Python utilizado a biblioteca Tkinter para a interface gráfica e SQLite para o banco de dados.
 Descrição dos Arquivos
-main.py
+interfac.py
 Este é o arquivo principal que executa o programa. Ele contém a interface gráfica do usuário e os comandos que interagem com o banco de dados.
+cadastro_tutor.py
+Este arquivo possui uma interface gráfica para o cadastro dos tutores. Nele há as funções de verificação dos digitos do CPF, utilizando a lógica de criação desses números. Há também a função que verifica se o CPF já foi cadastrado e impede que ele seja cadastrado novamente.
 funcoes.py
 Este arquivo contém as funções que são utilizadas para interagir com o banco de dados. As funções incluem registrar ponto, listar pontos, remover ponto, atualizar ponto e validar CPF.
 db.py
